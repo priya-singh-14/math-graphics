@@ -1,0 +1,665 @@
+/* ------------------------------------------------------------------ *
+ * Mathematical Design — design system
+ *
+ * Two groups of colour tokens, and the difference between them matters:
+ *
+ *   --paper / --ink / --paper-edge / --label / --caption
+ *     Plate tokens. A plate is ink on paper, so these are fixed and are never
+ *     overridden in the dark-mode block below. Plates do not invert.
+ *
+ *   --bg / --fg / --fg-soft / --rule / --field / --accent
+ *     Chrome tokens. These theme.
+ * ------------------------------------------------------------------ */
+
+:root {
+  /* Plate — fixed. Never redefine these in a media query. */
+  --paper: #efede4;
+  --ink: #1a1a18;
+  --paper-edge: #c9c6bb;
+  --label: #8a867a;
+  --caption: #5f5e5a;
+
+  /* Chrome — themeable. */
+  --bg: #f7f6f2;
+  --fg: #1a1a18;
+  --fg-soft: #5f5e5a;
+  --rule: #dedbd1;
+  --field: #ffffff;
+  --accent: #8a3b2e; /* red oxide: categorical accent only, never decoration */
+
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial,
+    sans-serif;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+
+  --micro: 12px;
+  --track: 0.06em;
+
+  /* Bouncy in, quiet out — the shared motion vocabulary. */
+  --spring: cubic-bezier(0.34, 1.2, 0.4, 1);
+  --quiet: cubic-bezier(0.32, 0, 0.24, 1);
+}
+
+/* Chrome only. The plate tokens are deliberately absent. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121211;
+    --fg: #e8e6df;
+    --fg-soft: #9b978c;
+    --rule: #2a2926;
+    --field: #1b1b19;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.micro,
+button,
+select,
+input,
+label,
+.rail,
+.field-label {
+  font-family: var(--sans);
+  font-size: var(--micro);
+  letter-spacing: var(--track);
+}
+
+.micro {
+  color: var(--fg-soft);
+}
+
+.shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 40px 0 28px;
+  border-bottom: 1px solid var(--rule);
+  flex-wrap: wrap;
+}
+
+.masthead h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 26px;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.masthead .colophon {
+  font-family: var(--sans);
+  font-size: var(--micro);
+  letter-spacing: var(--track);
+  color: var(--fg-soft);
+  max-width: 34ch;
+  text-align: right;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--serif);
+  max-width: 62ch;
+  margin: 32px 0 8px;
+  font-size: 16px;
+}
+
+.lede.opening {
+  font-size: 18px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 56px 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+  flex-wrap: wrap;
+}
+
+.section-head h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 19px;
+  margin: 0;
+}
+
+.section-head p {
+  margin: 0;
+  max-width: 46ch;
+}
+
+/* ------------------------------------------------------------------ *
+ * Plate frame — the atomic unit of the archive and of the export.
+ * ------------------------------------------------------------------ */
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+}
+
+.plate-frame {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--paper);
+  border: 0.5px solid var(--paper-edge);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.plate-frame canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.plate-number {
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--label);
+  pointer-events: none;
+}
+
+.plate-caption {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--caption);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plate-sub {
+  font-family: var(--sans);
+  font-size: var(--micro);
+  letter-spacing: var(--track);
+  color: var(--fg-soft);
+}
+
+/* Catalogue hover: quiet the neighbours rather than box the target. */
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 20px;
+}
+
+.plate-grid.quieting > * {
+  transition: opacity 260ms var(--quiet);
+}
+
+.plate-grid.quieting:hover > *:not(:hover) {
+  opacity: 0.45;
+}
+
+.plate-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+}
+
+.plate-link:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Single-plate view
+ * ------------------------------------------------------------------ */
+
+.plate-view {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+  margin-top: 28px;
+}
+
+.plate-stage {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.rail {
+  padding-top: 0;
+}
+
+.rail-group {
+  border-bottom: 1px solid var(--rule);
+  padding: 12px 0 16px;
+}
+
+.rail-group > h3 {
+  font-family: var(--sans);
+  font-size: var(--micro);
+  letter-spacing: var(--track);
+  font-weight: 400;
+  color: var(--fg);
+  margin: 0 0 10px;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.field-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.field-label {
+  color: var(--fg-soft);
+}
+
+.field-value {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-note {
+  color: var(--fg-soft);
+  opacity: 0.8;
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: var(--track);
+}
+
+input[type='range'] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--fg);
+  height: 18px;
+}
+
+input[type='number'],
+input[type='text'],
+select {
+  background: var(--field);
+  color: var(--fg);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 5px 6px;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  width: 100%;
+}
+
+button {
+  background: var(--field);
+  color: var(--fg);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition:
+    transform 220ms var(--spring),
+    border-color 180ms var(--quiet);
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--fg-soft);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.seed-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.segmented {
+  display: grid;
+  gap: 4px;
+}
+
+.segmented button {
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.segmented button[aria-pressed='true'],
+button[aria-pressed='true'] {
+  border-color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--fg);
+}
+
+.tag {
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--label);
+  border: 0.5px solid var(--rule);
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+
+.tag.performance {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * Entry data — the on-screen provenance block.
+ *
+ * The exported footer is composited onto the canvas and is not styled here;
+ * it stays compact because it is a printed footer. On screen the same data is
+ * a table, so a parameter can be found by scanning rather than by reading a
+ * run-on line.
+ * ------------------------------------------------------------------ */
+
+.entry-block,
+.rule-block {
+  border-top: 1px solid var(--rule);
+  margin-top: 22px;
+  padding-top: 14px;
+}
+
+.entry-block > .field-label,
+.rule-block > .field-label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.entry-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0 32px;
+  margin: 0;
+}
+
+.entry-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.entry-row dt {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: var(--track);
+  text-transform: lowercase;
+  color: var(--fg-soft);
+  white-space: nowrap;
+}
+
+.entry-row dd {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  word-break: break-word;
+}
+
+.formula {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+  color: var(--fg-soft);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ------------------------------------------------------------------ *
+ * Mapping table + transport
+ * ------------------------------------------------------------------ */
+
+.mapping-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px dotted var(--rule);
+}
+
+.mapping-row .span {
+  grid-column: 1 / -1;
+}
+
+.mapping-num {
+  display: grid;
+  grid-template-columns: 46px 1fr 34px;
+  align-items: center;
+  gap: 6px;
+}
+
+.transport {
+  display: grid;
+  gap: 8px;
+}
+
+.transport-track {
+  position: relative;
+}
+
+.transport-head {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  width: 1px;
+  height: calc(100% - 2px);
+  background: var(--ink);
+  will-change: transform;
+}
+
+.transport-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.ribbon {
+  width: 100%;
+  height: 34px;
+  display: block;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--field);
+}
+
+.meters {
+  display: grid;
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.meter-track {
+  height: 3px;
+  background: var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: var(--fg-soft);
+  transform-origin: left center;
+}
+
+.status {
+  color: var(--fg-soft);
+}
+
+.status.error {
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion — transform/opacity only, spring in, quiet out.
+ * ------------------------------------------------------------------ */
+
+.enter {
+  animation: plate-in 420ms var(--spring) both;
+}
+
+@keyframes plate-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.rail-enter {
+  animation: rail-in 380ms var(--spring) both;
+}
+
+@keyframes rail-in {
+  from {
+    opacity: 0;
+    transform: translate3d(-10px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reduced motion collapses ambient animation; the render loop separately
+   renders each plate as a settled still. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .plate-view {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  /* Bottom sheet on mobile: the plate leads, the controls follow. */
+  .plate-view .rail {
+    order: 2;
+  }
+
+  .plate-view .plate-stage {
+    order: 1;
+  }
+
+  .masthead .colophon {
+    text-align: left;
+  }
+}

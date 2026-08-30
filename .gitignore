@@ -1,0 +1,19 @@
+# Build output — regenerate with `npm run build`
+dist/
+dist-ssr/
+*.local
+
+# Dependencies — package-lock.json is committed instead
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Editor and OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
